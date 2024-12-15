@@ -1,0 +1,42 @@
+services:
+  db-app:
+    image: postgres:14-alpine
+    container_name: db-app
+    hostname: db
+    restart: always
+    ports:
+      - "5439:5432"
+    environment:
+      POSTGRES_PASSWORD: ${DB_PASS}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_DB: ${DB_NAME}
+    networks:
+      - service-web
+    volumes:
+      - db:/var/lib/postgresql/data
+
+  backend: 
+    container_name: backend
+    hostname: backend
+    restart: always
+    build:
+      context: "./app"
+    environment:
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASS: ${DB_PASS}
+    ports:
+      - "8000:8000"
+    networks:
+      - service-web
+    depends_on:
+      - db-app
+
+networks:
+  service-web:
+    driver: bridge
+
+volumes:
+  db: {}
